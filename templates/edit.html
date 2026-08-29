@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Tag Profile | {{ tag_id }}{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center p-4 py-12 animated-bg">
+    <div class="max-w-md w-full glass rounded-3xl shadow-2xl p-8 border border-white/20 text-slate-900">
+        
+        <!-- Case 1: Passcode Verification (We show passcode input form) -->
+        {% if step == "auth" %}
+        <div class="text-center mb-6">
+            <div class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center mx-auto text-lg mb-3">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <span class="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full mb-3 tracking-wider">
+                TAG ID: {{ tag_id }}
+            </span>
+            <h1 class="text-xl font-extrabold tracking-tight text-slate-800">Passcode Required</h1>
+            <p class="text-slate-500 text-xs mt-1">Please enter the passcode you set during tag activation to edit this profile.</p>
+        </div>
+
+        {% if error %}
+        <div class="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <form action="/u/{{ tag_id }}/edit" method="post" class="space-y-4">
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Enter Passcode</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fa-solid fa-lock text-sm"></i>
+                    </span>
+                    <input name="passcode" type="password" required autofocus class="w-full pl-9 pr-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-800 placeholder-slate-400" placeholder="••••">
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-2xl transition duration-150 shadow-md text-sm shine-btn btn-hover-effect">
+                Verify & Edit Profile
+            </button>
+            <div class="text-center mt-3">
+                <a href="/u/{{ tag_id }}" class="text-xs text-slate-500 hover:text-slate-800 transition">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Back to Card
+                </a>
+            </div>
+        </form>
+
+        <!-- Case 2: Edit Form (Passcode was validated) -->
+        {% elif step == "edit" %}
+        <div class="text-center mb-6">
+            <span class="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full mb-3 tracking-wider">
+                EDITING: {{ tag_id }}
+            </span>
+            <h1 class="text-xl font-extrabold tracking-tight text-slate-800">Update Your Profile</h1>
+            <p class="text-slate-500 text-xs mt-1">Modify your contact card. Changes will reflect instantly for scanned tags.</p>
+        </div>
+
+        <form action="/u/{{ tag_id }}/edit" method="post" class="space-y-4">
+            <!-- Hidden verification fields -->
+            <input type="hidden" name="passcode" value="{{ passcode }}">
+            <input type="hidden" name="action" value="save">
+
+            <!-- Full Name -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Full Name *</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fa-solid fa-user text-sm"></i>
+                    </span>
+                    <input name="name" value="{{ profile.name }}" required class="w-full pl-9 pr-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-800 placeholder-slate-400" placeholder="e.g. Alex Johnson">
+                </div>
+            </div>
+
+            <!-- Title / Headline -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Headline / Subtitle</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fa-solid fa-briefcase text-sm"></i>
+                    </span>
+                    <input name="title" value="{{ profile.title or '' }}" class="w-full pl-9 pr-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-800 placeholder-slate-400" placeholder="e.g. Freelancer / Consultant">
+                </div>
+            </div>
+
+            <!-- Phone -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Phone Number (with Country Code) *</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fa-solid fa-phone text-sm"></i>
+                    </span>
+                    <input name="phone" value="{{ profile.phone }}" required class="w-full pl-9 pr-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-800 placeholder-slate-400" placeholder="e.g. +1234567890">
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Email Address</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fa-solid fa-envelope text-sm"></i>
+                    </span>
+                    <input name="email" type="email" value="{{ profile.email or '' }}" class="w-full pl-9 pr-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-800 placeholder-slate-400" placeholder="e.g. alex@example.com">
+                </div>
+            </div>
+
+            <!-- WhatsApp -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">WhatsApp Number</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        <i class="fa-brands fa-whatsapp text-sm font-bold"></i>
+                    </span>
+                    <input name="whatsapp" value="{{ profile.whatsapp or '' }}" class="w-full pl-9 pr-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-slate-800 placeholder-slate-400" placeholder="e.g. +1234567890">
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex gap-3 pt-3">
+                <a href="/u/{{ tag_id }}" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 rounded-2xl transition duration-150 text-center text-sm">
+                    Cancel
+                </a>
+                <button type="submit" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-2xl transition duration-150 shadow-md text-sm shine-btn btn-hover-effect">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+        {% endif %}
+        
+    </div>
+</div>
+{% endblock %}

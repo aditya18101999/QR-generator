@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Smart QR Contact System{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+    <!-- 1. Metrics & Overview Section -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+        <div class="dark-glass rounded-2xl p-5 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Tags</span>
+                <h3 class="text-2xl font-bold text-white mt-1">{{ stats.total }}</h3>
+            </div>
+            <div class="w-12 h-12 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center border border-indigo-500/20 text-lg">
+                <i class="fa-solid fa-tags"></i>
+            </div>
+        </div>
+
+        <div class="dark-glass rounded-2xl p-5 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Claimed Profiles</span>
+                <h3 class="text-2xl font-bold text-emerald-400 mt-1">{{ stats.claimed }}</h3>
+            </div>
+            <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-500/20 text-lg">
+                <i class="fa-solid fa-id-card"></i>
+            </div>
+        </div>
+
+        <div class="dark-glass rounded-2xl p-5 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Available Tags</span>
+                <h3 class="text-2xl font-bold text-amber-400 mt-1">{{ stats.unclaimed }}</h3>
+            </div>
+            <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center border border-amber-500/20 text-lg">
+                <i class="fa-solid fa-ticket"></i>
+            </div>
+        </div>
+
+        <div class="dark-glass rounded-2xl p-5 flex items-center justify-between shadow-lg">
+            <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Profile Scans</span>
+                <h3 class="text-2xl font-bold text-violet-400 mt-1">{{ stats.total_scans }}</h3>
+            </div>
+            <div class="w-12 h-12 bg-violet-500/10 text-violet-400 rounded-xl flex items-center justify-center border border-violet-500/20 text-lg">
+                <i class="fa-solid fa-chart-simple"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Split Screen: Tag Generator & Customizer -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left & Center column: Tag Generator and Table -->
+        <div class="lg:col-span-2 space-y-8">
+            
+            <!-- Batch Generation Card -->
+            <div class="dark-glass rounded-2xl p-6 shadow-xl">
+                <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-minus text-indigo-500"></i> Batch Generate Tag IDs
+                </h2>
+                
+                <form action="/admin/generate" method="post" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Start ID Number</label>
+                        <input type="number" name="start_id" required min="1" placeholder="e.g. 1" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Count (Total Tags to Make)</label>
+                        <input type="number" name="count" required min="1" max="100" placeholder="e.g. 10" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-white">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl text-sm transition shine-btn btn-hover-effect">
+                            <i class="fa-solid fa-circle-check mr-1.5"></i> Generate Tags
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tags Table Card -->
+            <div class="dark-glass rounded-2xl p-6 shadow-xl flex flex-col h-[500px]">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-indigo-500"></i> Active Smart Tags
+                    </h2>
+                    <!-- Search Field -->
+                    <div class="relative w-full sm:w-64">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </span>
+                        <input type="text" id="tagSearch" placeholder="Search by ID or Name..." class="w-full pl-9 pr-4 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:border-indigo-500 text-white">
+                    </div>
+                </div>
+
+                <!-- Table Content Scroll Wrap -->
+                <div class="overflow-y-auto flex-grow pr-1">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
+                                <th class="py-3 px-4">Tag ID</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4">Claimant</th>
+                                <th class="py-3 px-4 text-center">Scans</th>
+                                <th class="py-3 px-4">Last Active</th>
+                                <th class="py-3 px-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if not tags %}
+                            <tr>
+                                <td colspan="6" class="py-12 text-center text-slate-500">
+                                    <i class="fa-solid fa-inbox text-3xl mb-2 block"></i> No tags generated yet. Use the batch generator above!
+                                </td>
+                            </tr>
+                            {% else %}
+                                {% for tag in tags %}
+                                <tr class="border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors tag-row" 
+                                    data-tag-id="{{ tag.tag_id }}" 
+                                    data-name="{{ tag.name or '' }}">
+                                    <td class="py-3 px-4 font-mono font-bold text-indigo-400">{{ tag.tag_id }}</td>
+                                    <td class="py-3 px-4">
+                                        {% if tag.claimed %}
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Claimed</span>
+                                        {% else %}
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4 text-slate-300 font-medium max-w-[120px] truncate">{{ tag.name or '-' }}</td>
+                                    <td class="py-3 px-4 text-center font-semibold text-slate-300">{{ tag.scan_count }}</td>
+                                    <td class="py-3 px-4 text-slate-400 font-mono text-[10px]">
+                                        {{ tag.last_scanned_at[:16].replace('T', ' ') if tag.last_scanned_at else '-' }}
+                                    </td>
+                                    <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
+                                        <button class="configure-tag-btn text-indigo-400 hover:text-indigo-300 transition-colors" data-tag-id="{{ tag.tag_id }}" title="Customize QR">
+                                            <i class="fa-solid fa-sliders"></i>
+                                        </button>
+                                        <a href="/u/{{ tag.tag_id }}" target="_blank" class="text-slate-400 hover:text-white transition-colors" title="Scan Link">
+                                            <i class="fa-solid fa-external-link"></i>
+                                        </a>
+                                        <button class="copy-link-btn text-slate-500 hover:text-slate-300 transition-colors px-1 py-0.5 border border-transparent rounded hover:border-slate-800" data-url="http://localhost:8000/u/{{ tag.tag_id }}" title="Copy Link">
+                                            <i class="fa-solid fa-copy"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right column: QR Code Customizer & Live Preview -->
+        <div id="customizerSection" class="space-y-8">
+            <div class="dark-glass rounded-2xl p-6 shadow-xl sticky top-24">
+                <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-palette text-indigo-500"></i> QR Code Customizer
+                </h2>
+
+                <form id="qrCustomizerForm" class="space-y-4" enctype="multipart/form-data">
+                    <!-- Target Tag selection -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Select Tag ID</label>
+                        <select name="tag_id" id="tagSelect" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-white">
+                            {% if not tags %}
+                            <option value="">No tags available</option>
+                            {% else %}
+                                {% for tag in tags %}
+                                <option value="{{ tag.tag_id }}">{{ tag.tag_id }} ({{ 'Claimed' if tag.claimed else 'Unclaimed' }})</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <!-- Customizer Colors (Side by Side) -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Foreground</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" name="fg_color" id="fgColor" value="#0f172a" class="w-10 h-10 border-0 bg-transparent cursor-pointer rounded-xl">
+                                <span class="text-xs font-mono text-slate-300">Color</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">Background</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" name="bg_color" id="bgColor" value="#ffffff" class="w-10 h-10 border-0 bg-transparent cursor-pointer rounded-xl">
+                                <span class="text-xs font-mono text-slate-300">Color</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error Correction and Border Settings -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Error Correction Level</label>
+                        <select name="error_correction" id="eccLevel" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-white">
+                            <option value="H" selected>High (25-30% recovery - Recommended for Logo overlays)</option>
+                            <option value="Q">Quartile (20-25% recovery)</option>
+                            <option value="M">Medium (15% recovery)</option>
+                            <option value="L">Low (7% recovery)</option>
+                        </select>
+                    </div>
+
+                    <!-- Logo Upload (Overlays logo in center) -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Center Logo Image (Optional)</label>
+                        <div class="border border-dashed border-slate-800 bg-slate-950 hover:bg-slate-900 rounded-xl p-3 text-center cursor-pointer transition relative">
+                            <input type="file" name="logo" id="logoUpload" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <i class="fa-solid fa-image text-slate-500 text-lg mb-1"></i>
+                            <p class="text-xs text-slate-400" id="logoFileName">Click or drag logo here</p>
+                        </div>
+                    </div>
+
+                    <!-- Live Preview Display -->
+                    <div class="relative bg-slate-950 rounded-2xl border border-slate-800 p-6 flex flex-col items-center justify-center aspect-square shadow-inner">
+                        <!-- Spinner loader overlay -->
+                        <div id="previewSpinner" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm rounded-2xl flex items-center justify-center hidden">
+                            <div class="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                        
+                        <!-- Preview Image -->
+                        <img id="qrPreviewImage" src="" alt="QR Code Preview" class="w-48 h-48 object-contain rounded shadow-lg bg-white">
+                        <span class="text-[10px] text-slate-500 font-mono mt-3 uppercase tracking-wider">Dynamic Scannable Preview</span>
+                    </div>
+
+                    <!-- Custom Download Buttons -->
+                    <div class="space-y-2 pt-2">
+                        <button type="button" id="downloadQrBtn" class="w-full bg-gradient-to-tr from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-lg shine-btn btn-hover-effect flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-download"></i> Download QR (PNG)
+                        </button>
+                        
+                        <button type="submit" formmethod="POST" formaction="/admin/download-zip" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-slate-300 font-medium py-2 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-file-zipper"></i> Batch Export All QRs (ZIP)
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

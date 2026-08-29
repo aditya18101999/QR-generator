@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile.name }} | Contact Card{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center p-4 py-12 animated-bg">
+    <div class="max-w-sm w-full glass rounded-[32px] shadow-2xl overflow-hidden border border-white/20 text-slate-800 flex flex-col">
+        <!-- Top Gradient Banner -->
+        <div class="bg-gradient-to-tr from-indigo-600 to-violet-600 p-8 text-center text-white relative">
+            <div class="absolute top-4 right-4 bg-white/10 text-white/80 border border-white/10 px-2 py-0.5 rounded-full text-[9px] font-mono tracking-wider">
+                {{ profile.tag_id }}
+            </div>
+            
+            <!-- Initials Avatar with shadow -->
+            <div class="w-20 h-20 bg-white text-indigo-600 font-extrabold text-3xl rounded-full flex items-center justify-center mx-auto shadow-xl mb-3 border-2 border-white/20 select-none">
+                {{ profile.name[0].upper() if profile.name else 'U' }}
+            </div>
+            <h1 class="text-xl font-bold font-display tracking-tight">{{ profile.name }}</h1>
+            <p class="text-indigo-100 text-xs mt-0.5 font-medium opacity-90">{{ profile.title or 'Smart Tag Owner' }}</p>
+        </div>
+        
+        <!-- Contact Options Content -->
+        <div class="p-6 space-y-3.5 bg-white/50 backdrop-blur-md flex-grow">
+            <!-- Call Directly (Always shown if phone exists) -->
+            {% if profile.phone %}
+            <a href="tel:{{ profile.phone }}" class="flex items-center justify-center gap-2.5 w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-semibold text-sm transition shadow-md btn-hover-effect">
+                <i class="fa-solid fa-phone"></i> Call Directly
+            </a>
+            {% endif %}
+
+            <!-- WhatsApp Link -->
+            {% if profile.whatsapp %}
+            <a href="https://wa.me/{{ profile.whatsapp.replace('+', '') }}?text=Hi,%20I%20just%20scanned%20your%20Smart%20QR%20code!" target="_blank" class="flex items-center justify-center gap-2.5 w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-semibold text-sm transition shadow-md btn-hover-effect">
+                <i class="fa-brands fa-whatsapp text-lg"></i> Message on WhatsApp
+            </a>
+            {% endif %}
+
+            <!-- Send Email Link -->
+            {% if profile.email %}
+            <a href="mailto:{{ profile.email }}" class="flex items-center justify-center gap-2.5 w-full py-3.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200/80 rounded-2xl font-semibold text-sm transition shadow-sm btn-hover-effect">
+                <i class="fa-solid fa-envelope"></i> Send Email
+            </a>
+            {% endif %}
+
+            <!-- Save Contact (vCard) File -->
+            <a href="/u/{{ profile.tag_id }}/vcard" class="flex items-center justify-center gap-2.5 w-full py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 border border-indigo-500/20 rounded-2xl font-bold text-xs transition mt-2">
+                <i class="fa-solid fa-address-book"></i> Save to Phone Contacts
+            </a>
+        </div>
+        
+        <!-- Footer Edit Link -->
+        <div class="px-6 pb-6 pt-3 bg-white/30 text-center border-t border-slate-200/20">
+            <a href="/u/{{ profile.tag_id }}/edit" class="text-xs text-slate-500 hover:text-indigo-600 font-semibold transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-pen-to-square"></i> Tag Owner? Edit Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
